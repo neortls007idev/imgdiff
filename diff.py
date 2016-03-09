@@ -69,14 +69,23 @@ def displayDiff(val):
 		if my_var.get()==0:
 			if newval[1]!=oldval[1]:
 				imD=diffTransImage(img1,img2)
+				scaletext.config(text="\nSlider has no Affect\n")
+
 		elif my_var.get()==1:
 			imD=diffError(img1,img2,int(val))
+			scaletext.config(text="\nChange Tolerance\n")
+
 		elif my_var.get()==2:
 			imD=diffErrorOverlay(img1,img2,int(val))
+			scaletext.config(text="\nChange Tolerance\n")
 		elif my_var.get()==3:
 			imD= overlayImage(img1,img2,int(val))
+			scaletext.config(text="\nChange Image2 Transparency\n")
+
 		else:
 			imD=slideImage(img1,img2,int(val))		
+			scaletext.config(text="\nSlide to Change Images\n")
+
 		try:
 			imD=imD.convert('RGB')
 		except:
@@ -125,13 +134,15 @@ if sizeDiff:
 
 scale = Tkinter.Scale(orient='horizontal', from_=0, to=100, showvalue=0,command=displayDiff)
 scale.pack()
+scaletext = Tkinter.Label(root, text="\nSlide to Change Images\n")
+scaletext.pack()
 
 panel = Tkinter.Label(root, image = img)
 panel.pack(side = "bottom", fill = "both", expand = "yes")
 
-rb0 = Tkinter.Radiobutton(root, text='Differences Only(Slider has no affect)', variable=my_var, value=0,command=refresh)
-rb1 = Tkinter.Radiobutton(root, text='Differences as ErrorPixels(Slider for Tolerance Level)', variable=my_var, value=1,command=refresh)
-rb2 = Tkinter.Radiobutton(root, text='ErrorPixels Overlay(Slider for Tolerance Level)', variable=my_var, value=2,command=refresh)
+rb0 = Tkinter.Radiobutton(root, text='Differences Only', variable=my_var, value=0,command=refresh)
+rb1 = Tkinter.Radiobutton(root, text='Differences as ErrorPixels', variable=my_var, value=1,command=refresh)
+rb2 = Tkinter.Radiobutton(root, text='ErrorPixels Overlay', variable=my_var, value=2,command=refresh)
 rb3 = Tkinter.Radiobutton(root, text='Image Overlay', variable=my_var, value=3,command=refresh)
 rb4 = Tkinter.Radiobutton(root, text='Slide Difference', variable=my_var, value=4,command=refresh)
 
