@@ -3,8 +3,9 @@
 
 dependencies 
 
-sudo pip install Pillow Tkinter colorthief
+sudo pip install Pillow colorthief
 
+sudo apt-get install python-tk
 
 sudo apt-get install python-imaging-tk
 
