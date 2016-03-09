@@ -29,7 +29,7 @@ def diffError(img1,img2,tolerance):
 	for i in range(img1.size[0]):
 		for j in range(img1.size[1]):
 			a = reduce(lambda x,y:x+y ,diffpix(img1.getpixel((i,j)),img2.getpixel((i,j))))
-			if a > tolerance:
+			if a/3 > tolerance:
 				imNew.putpixel((i,j),errorpixel)
 	return imNew		
 
@@ -38,7 +38,7 @@ def diffErrorOverlay(img1,img2,tolerance):
 	for i in range(img1.size[0]):
 		for j in range(img1.size[1]):
 			a = reduce(lambda x,y:x+y ,diffpix(img1.getpixel((i,j)),img2.getpixel((i,j))))
-			if a > tolerance:
+			if a/3 > tolerance:
 				imNew.putpixel((i,j),errorpixel)
 			else:
 				imNew.putpixel((i,j),img1.getpixel((i,j)))	
@@ -46,7 +46,7 @@ def diffErrorOverlay(img1,img2,tolerance):
 def overlayImage(img1,img2,alpha):
 	try:
 		return Image.blend(img1, img2, float(alpha)/100)
-	except:
+	except ValueError:
 		return Image.blend(img1.convert('RGB'), img2.convert('RGB'), float(alpha)/100)
 
 def slideImage(img1,img2,percent):
@@ -85,7 +85,7 @@ def displayError(val):
 			img = ImageTk.PhotoImage(imD)
 			panel.config(image=img)
 			panel.image=img
-		except ValueError:
+		except UnboundLocalError:
 			pass	
 		oldval=newval
 
@@ -93,27 +93,45 @@ def refresh():
 	z=scale.get()
 	displayError(z)
 
+def resize(img1,img2):
+	basewidth = min(img1.size[0],img2.size[0])
+	wpercent = (basewidth/float(img1.size[0]))
+	hsize = int((float(img1.size[1])*float(wpercent)))
+	img = img1.resize((basewidth,hsize), Image.ANTIALIAS)
+	return img
+
+
 parameters=sys.argv
 num = len(parameters)
 img1 = Image.open(sys.argv[1])
 img2 = Image.open(sys.argv[2])
 
+sizeDiff=0
+if img1.size!=img2.size:
+	img1 = resize(img1,img2)
+	img2 = resize(img2,img1)
+	sizeDiff=1
 
 
 root = Tkinter.Tk()
 my_var = Tkinter.IntVar()
 my_var.set(4)
 
+
+img = ImageTk.PhotoImage(img1)
+if sizeDiff:
+	sizeError = Tkinter.Label(root, text="\nThe Images are of different sizes.\n They have been resized to the smaller one\n")
+	sizeError.pack()
+
 scale = Tkinter.Scale(orient='horizontal', from_=0, to=100, showvalue=0,command=displayError)
 scale.pack()
 
-img = ImageTk.PhotoImage(img1)
 panel = Tkinter.Label(root, image = img)
 panel.pack(side = "bottom", fill = "both", expand = "yes")
 
 rb0 = Tkinter.Radiobutton(root, text='Differences Only(Slider has no affect)', variable=my_var, value=0,command=refresh)
-rb1 = Tkinter.Radiobutton(root, text='Differences as ErrorPixels', variable=my_var, value=1,command=refresh)
-rb2 = Tkinter.Radiobutton(root, text='ErrorPixels Overlay', variable=my_var, value=2,command=refresh)
+rb1 = Tkinter.Radiobutton(root, text='Differences as ErrorPixels(Slider for Tolerance Level)', variable=my_var, value=1,command=refresh)
+rb2 = Tkinter.Radiobutton(root, text='ErrorPixels Overlay(Slider for Tolerance Level)', variable=my_var, value=2,command=refresh)
 rb3 = Tkinter.Radiobutton(root, text='Image Overlay', variable=my_var, value=3,command=refresh)
 rb4 = Tkinter.Radiobutton(root, text='Slide Difference', variable=my_var, value=4,command=refresh)
 
