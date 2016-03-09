@@ -44,7 +44,10 @@ def diffErrorOverlay(img1,img2,tolerance):
 				imNew.putpixel((i,j),img1.getpixel((i,j)))	
 	return imNew
 def overlayImage(img1,img2,alpha):
-	return Image.blend(img1, img2, float(alpha)/100)
+	try:
+		return Image.blend(img1, img2, float(alpha)/100)
+	except:
+		return Image.blend(img1.convert('RGB'), img2.convert('RGB'), float(alpha)/100)
 
 def slideImage(img1,img2,percent):
 	imNew = Image.new('RGB',(img1.size),'white')
@@ -65,15 +68,19 @@ def displayError(val):
 	if newval[0]!=oldval[0] or newval[1]!=oldval[1]:
 		if my_var.get()==0:
 			if newval[1]!=oldval[1]:
-				imD=diffTransImage(img1,img2).convert('RGB')
+				imD=diffTransImage(img1,img2)
 		elif my_var.get()==1:
-			imD=diffError(img1,img2,int(val)).convert('RGB')
+			imD=diffError(img1,img2,int(val))
 		elif my_var.get()==2:
-			imD=diffErrorOverlay(img1,img2,int(val)).convert('RGB')
+			imD=diffErrorOverlay(img1,img2,int(val))
 		elif my_var.get()==3:
-			imD= overlayImage(img1,img2,int(val)).convert('RGB')
+			imD= overlayImage(img1,img2,int(val))
 		else:
-			imD=slideImage(img1,img2,int(val)).convert('RGB')		
+			imD=slideImage(img1,img2,int(val))		
+		try:
+			imD=imD.convert('RGB')
+		except:
+			pass		
 		try:	
 			img = ImageTk.PhotoImage(imD)
 			panel.config(image=img)
