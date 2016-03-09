@@ -62,7 +62,7 @@ def slideImage(img1,img2,percent):
 
 oldval=(0,0)
 
-def displayError(val):
+def displayDiff(val):
 	global oldval
 	newval=(val,my_var.get())
 	if newval[0]!=oldval[0] or newval[1]!=oldval[1]:
@@ -91,7 +91,7 @@ def displayError(val):
 
 def refresh():
 	z=scale.get()
-	displayError(z)
+	displayDiff(z)
 
 def resize(img1,img2):
 	basewidth = min(img1.size[0],img2.size[0])
@@ -123,7 +123,7 @@ if sizeDiff:
 	sizeError = Tkinter.Label(root, text="\nThe Images are of different sizes.\n They have been resized to the smaller one\n")
 	sizeError.pack()
 
-scale = Tkinter.Scale(orient='horizontal', from_=0, to=100, showvalue=0,command=displayError)
+scale = Tkinter.Scale(orient='horizontal', from_=0, to=100, showvalue=0,command=displayDiff)
 scale.pack()
 
 panel = Tkinter.Label(root, image = img)
