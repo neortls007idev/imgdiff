@@ -4,8 +4,9 @@ from PIL import ImageChops
 from PIL import ImageDraw,ImageColor
 import Tkinter
 import ImageTk
+from colorthief import ColorThief as ct
 
-errorpixel = (255,0,255,255) #color of the errorpixel
+errorpixel = (255,0,255 ,255) #color of the errorpixel
 
 def getBrightness(p): #calculating alpha value from rgb
 	return int(0.3*p[0]+0.59*p[1]+0.11*p[2])
@@ -110,6 +111,31 @@ def resize(img1,img2):
 	return img
 
 
+class Pallete:
+
+	def __init__(self,val,path,parent):
+		self.val = int(val)
+		self.pallete = self.getProminent(path,self.val)
+		self.Tkimg = ImageTk.PhotoImage(self.pallete)
+		self.TkL = Tkinter.Label(parent, image = self.Tkimg)
+		self.TkL.pack(side = "left", fill = "both", expand = "yes")
+
+	def getProminent(self,img,val=1):
+		z=int(200/int(val))
+		imNew = Image.new('RGB',(z*val,60),'white')
+		a = [i for i in range(0,z*val,z)]
+		ctimg=ct(img)
+		if val>1:
+			pallete = ctimg.get_palette(color_count=val)
+			for i in range(val):
+				imTemp = Image.new('RGB',(z,60),pallete[i])
+				imNew.paste(imTemp,(z*i,0))
+		else:
+			pallete = ctimg.get_color()
+			imTemp = Image.new('RGB',(z,60),pallete)
+			imNew.paste(imTemp,(0,0))
+		return imNew	
+	
 parameters=sys.argv
 num = len(parameters)
 img1 = Image.open(sys.argv[1])
@@ -123,6 +149,7 @@ if img1.size!=img2.size:
 
 
 root = Tkinter.Tk()
+root.title("imgDiff")
 my_var = Tkinter.IntVar()
 my_var.set(4)
 
@@ -132,25 +159,34 @@ if sizeDiff:
 	sizeError = Tkinter.Label(root, text="\nThe Images are of different sizes.\n They have been resized to the smaller one\n")
 	sizeError.pack()
 
-scale = Tkinter.Scale(orient='horizontal', from_=0, to=100, showvalue=0,command=displayDiff)
-scale.pack()
-scaletext = Tkinter.Label(root, text="\nSlide to Change Images\n")
-scaletext.pack()
+diffBox = Tkinter.Label(root)
+diffBox.pack(side="top")
 
-panel = Tkinter.Label(root, image = img)
-panel.pack(side = "bottom", fill = "both", expand = "yes")
+imgBox = Tkinter.Label(diffBox)
+imgBox.pack(side="left")
 
-rb0 = Tkinter.Radiobutton(root, text='Differences Only', variable=my_var, value=0,command=refresh)
-rb1 = Tkinter.Radiobutton(root, text='Differences as ErrorPixels', variable=my_var, value=1,command=refresh)
-rb2 = Tkinter.Radiobutton(root, text='ErrorPixels Overlay', variable=my_var, value=2,command=refresh)
-rb3 = Tkinter.Radiobutton(root, text='Image Overlay', variable=my_var, value=3,command=refresh)
-rb4 = Tkinter.Radiobutton(root, text='Slide Difference', variable=my_var, value=4,command=refresh)
+panel = Tkinter.Label(imgBox, image = img)
+panel.pack(side = "top", fill = "both", expand = "yes")
 
-rb0.pack(anchor='w')
-rb1.pack(anchor='w')
-rb2.pack(anchor='w')
-rb3.pack(anchor='w')
-rb4.pack(anchor='w')
+scale = Tkinter.Scale(imgBox,orient='horizontal', from_=0, to=100, showvalue=0,command=displayDiff,length=min(img1.size[0],img2.size[0]))
+scale.pack(side = "top")
+scaletext = Tkinter.Label(imgBox, text="\nSlide to Change Images\n")
+scaletext.pack(side="top")
+
+radioBox = Tkinter.Label(diffBox)
+radioBox.pack(side="left")
+radioarr = ['Differences Only','Differences as ErrorPixels','ErrorPixels Overlay','Image Overlay','Slide Difference']
+for i , j in enumerate(radioarr):
+	rb = Tkinter.Radiobutton(radioBox, text=j, variable=my_var, value=i,command=refresh)
+	rb.pack(anchor='w')
+
+
+palleteBox = Tkinter.Label(root)
+palleteBox.pack(side="top")
+pallete1 = Pallete(sys.argv[3],sys.argv[1],palleteBox)
+gap = Tkinter.Label(palleteBox,width=5)
+gap.pack(side="left")
+pallete2 = Pallete(sys.argv[3],sys.argv[2],palleteBox)
 
 root.mainloop()
 
