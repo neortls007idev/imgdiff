@@ -2,10 +2,12 @@ import sys
 from PIL import Image
 from PIL import ImageChops
 from PIL import ImageDraw,ImageColor
+import Tkinter
+import ImageTk
 
 errorpixel = (255,0,255,255) #color of the errorpixel
 
-def getBrightness(p):
+def getBrightness(p): #calculating alpha value from rgb
 	return int(0.3*p[0]+0.59*p[1]+0.11*p[2])
 
 def diffpix(p1,p2):
@@ -41,31 +43,78 @@ def diffErrorOverlay(img1,img2,tolerance):
 			else:
 				imNew.putpixel((i,j),img1.getpixel((i,j)))	
 	return imNew
+def overlayImage(img1,img2,alpha):
+	return Image.blend(img1, img2, float(alpha)/100)
+
+def slideImage(img1,img2,percent):
+	imNew = Image.new('RGB',(img1.size),'white')
+	sizex=img1.size[0]
+	sizey=img1.size[1]
+	x = (sizex*percent)/100
+	img1crop = img1.crop((x,0,sizex,sizey))
+	img2crop = img2.crop((0,0,x,sizey))
+	imNew.paste(img1crop,(x,0))
+	imNew.paste(img2crop,(0,0))
+	return imNew
+
+oldval=(0,0)
+
+def displayError(val):
+	global oldval
+	newval=(val,my_var.get())
+	if newval[0]!=oldval[0] or newval[1]!=oldval[1]:
+		if my_var.get()==0:
+			if newval[1]!=oldval[1]:
+				imD=diffTransImage(img1,img2).convert('RGB')
+		elif my_var.get()==1:
+			imD=diffError(img1,img2,int(val)).convert('RGB')
+		elif my_var.get()==2:
+			imD=diffErrorOverlay(img1,img2,int(val)).convert('RGB')
+		elif my_var.get()==3:
+			imD= overlayImage(img1,img2,int(val)).convert('RGB')
+		else:
+			imD=slideImage(img1,img2,int(val)).convert('RGB')		
+		try:	
+			img = ImageTk.PhotoImage(imD)
+			panel.config(image=img)
+			panel.image=img
+		except:
+			pass	
+		oldval=newval
+
+def refresh():
+	z=scale.get()
+	displayError(z)
 
 parameters=sys.argv
 num = len(parameters)
 img1 = Image.open(sys.argv[1])
 img2 = Image.open(sys.argv[2])
-if num>3:
-	mode = sys.argv[3]
-if num>4:
-	tolF= int(sys.argv[4])
 
-if num==3:
-	imDisplay=diffTransImage(img1,img2)	
 
-if num==4:
-	if mode=="E":
-		imDisplay=diffError(img1,img2,20)
-	if mode=="ET":
-		imDisplay=diffErrorOverlay(img1,img2,20)
-	else:
-		imDisplay=diffTransImage(img1,img2)	
 
-elif num==5:	
-	if mode=="E":
-		imDisplay=diffError(img1,img2,tolF)
-	elif mode=="ET":
-		imDisplay=diffErrorOverlay(img1,img2,tolF)	
-	
-imDisplay.show()
+root = Tkinter.Tk()
+my_var = Tkinter.IntVar()
+my_var.set(4)
+
+scale = Tkinter.Scale(orient='horizontal', from_=0, to=100, showvalue=0,command=displayError)
+scale.pack()
+
+img = ImageTk.PhotoImage(img1)
+panel = Tkinter.Label(root, image = img)
+panel.pack(side = "bottom", fill = "both", expand = "yes")
+
+rb0 = Tkinter.Radiobutton(root, text='Differences Only(Slider has no affect)', variable=my_var, value=0,command=refresh)
+rb1 = Tkinter.Radiobutton(root, text='Differences as ErrorPixels', variable=my_var, value=1,command=refresh)
+rb2 = Tkinter.Radiobutton(root, text='ErrorPixels Overlay', variable=my_var, value=2,command=refresh)
+rb3 = Tkinter.Radiobutton(root, text='Image Overlay', variable=my_var, value=3,command=refresh)
+rb4 = Tkinter.Radiobutton(root, text='Slide Difference', variable=my_var, value=4,command=refresh)
+
+rb0.pack(anchor='w')
+rb1.pack(anchor='w')
+rb2.pack(anchor='w')
+rb3.pack(anchor='w')
+rb4.pack(anchor='w')
+
+root.mainloop()
+
