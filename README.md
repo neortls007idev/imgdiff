@@ -3,10 +3,11 @@
 
 dependencies 
 
-sudo pip install PIL Tkinter 
+sudo pip install PIL Tkinter colorthief
 
 
 sudo apt-get install python-imaging-tk
+
 
 
 
