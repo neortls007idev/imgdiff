@@ -85,7 +85,7 @@ def displayError(val):
 			img = ImageTk.PhotoImage(imD)
 			panel.config(image=img)
 			panel.image=img
-		except:
+		except ValueError:
 			pass	
 		oldval=newval
 
